@@ -5,6 +5,7 @@ from pathlib import Path
 from gzcli.cli.config import CLI_PATH
 from gzcli.cli.errors import error_wrap
 from gzcli.cli.models import ChallengeSpec
+from gzcli.cli.output import success
 
 
 @click.group()
@@ -35,7 +36,7 @@ def init(name, dest: Path, template: str = "default"):
             f"invalid template name, available template names are: \n{'\n'.join(available_templates)}"
         )
     available_templates[template].copy_into(dest)
-    click.echo(f"initialized challenge files for {name} at {dest}/")
+    success(f"initialized challenge files for {name} at {dest}/")
 
 
 @challenge.command()

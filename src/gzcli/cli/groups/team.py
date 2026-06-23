@@ -5,6 +5,7 @@ import requests
 from pydantic import ValidationError
 from gzcli.cli.auth import require_existing_profile, APIProfile
 from gzcli.cli.errors import error_wrap
+from gzcli.cli.output import success
 from gzcli.api.team import create_team
 from gzcli.api.models.requests.team import TeamUpdateModel
 
@@ -54,4 +55,4 @@ def register(name: str, bio: str | None, profile: APIProfile):
     except requests.HTTPError as exc:
         raise click.ClickException(_format_http_error(exc))
 
-    click.echo(f"[+] team '{created.name}' registered successfully (id: {created.id})")
+    success(f"team '{created.name}' registered successfully (id: {created.id})")

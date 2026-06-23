@@ -6,6 +6,7 @@ import yaml
 from pathlib import Path
 from gzcli.cli.auth import require_existing_profile, APIProfile
 from gzcli.cli.models import ChallengeSpec
+from gzcli.cli.output import success, info
 from gzcli.api.assets import upload_files
 from gzcli.api.edit import (
     add_challenge,
@@ -132,8 +133,8 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
     challenge_endpoint = profile.make_endpoint(
         f"/admin/games/{game_id}/challenges/{challenge_id}"
     )
-    click.echo("[+] challenge pushed successfully")
-    click.echo(f"[+] access the challenge at {challenge_endpoint}")
+    success("challenge pushed successfully")
+    info(f"access the challenge at {challenge_endpoint}")
 
 
 # @game.command("upload-assets")

@@ -42,4 +42,4 @@ you must be logged in first (see `gz login`), and each user account can only own
 - Complete all API endpoints and data models
 - Add account creation command
 - Improve help texts and documentations
-- Fancy stuff (coloured text, progress bars, autocompletions...)
+- Fancy stuff (progress bars, autocompletions...)

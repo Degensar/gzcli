@@ -7,6 +7,7 @@ from gzcli.cli.auth import (
     require_existing_profile,
 )
 from gzcli.cli.config import PROFILES_PATH
+from gzcli.cli.output import success
 from gzcli.api._http import APIProfile, make_post
 from gzcli.api.models.enum import ChallengeCategory, ChallengeType
 
@@ -47,7 +48,7 @@ def login(
     all_profiles = _load_profiles(PROFILES_PATH)
     all_profiles[profile] = {"url": url, "username": username, "token": token}
     _save_edited_profiles(all_profiles, PROFILES_PATH)
-    click.echo(f"login successful, stored login credentials for profile {profile}")
+    success(f"login successful, stored login credentials for profile {profile}")
 
 
 @gz.command()
@@ -58,7 +59,7 @@ def logout(profile: APIProfile):
     all_profiles = _load_profiles(PROFILES_PATH)
     all_profiles.pop(profile.name)
     _save_edited_profiles(all_profiles, PROFILES_PATH)
-    click.echo(f"profile {profile.name} logged out successfully")
+    success(f"profile {profile.name} logged out successfully")
 
 
 @gz.command("list-challenge-categories")
