@@ -47,4 +47,4 @@ you will be prompted for a password. if the server activates accounts on registr
 - Complete all API endpoints and data models
 - Add account creation command
 - Improve help texts and documentations
-- Fancy stuff (coloured text, progress bars, autocompletions...)
+- Fancy stuff (progress bars, autocompletions...)
