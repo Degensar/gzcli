@@ -45,7 +45,7 @@ class ChallengeEditDetailModel(BaseModel):
     isEnabled: bool
     memoryLimit: Optional[int] = Field(default=None, ge=32, le=1048576)
     minScoreRate: float = Field(ge=0.0, le=1.0)
-    networkMode: ChallengeNetworkMode = "Open"
+    networkMode: Optional[ChallengeNetworkMode] = None
     originalScore: int
     storageLimit: Optional[int] = Field(default=None, ge=0, le=1048576)
     submissionLimit: int
@@ -73,7 +73,7 @@ class ChallengeUpdateModel(BaseModel):
     cpuCount: Optional[int] = Field(default=None, ge=1, le=1024)
     deadlineUtc: Optional[int] = None
     difficulty: Optional[float] = None
-    disableBloodBonus: bool = False
+    disableBloodBonus: Optional[bool] = None
     enableTrafficCapture: Optional[bool] = None
     exposePort: Optional[int] = None
     fileName: Optional[str] = None
@@ -108,6 +108,22 @@ class DivisionEditModel(BaseModel):
     defaultPermissions: Optional[GamePermission] = None
     inviteCode: Optional[str] = Field(default=None, max_length=32)
     name: Optional[str] = Field(default=None, min_length=1, max_length=31)
+
+
+class Division(BaseModel):
+    """Division entity returned by the division edit endpoints.
+
+    Mirrors ``Division`` in ``src/GZCTF/Models/Data/Division.cs``. ``gameId`` and
+    ``game`` are ``[JsonIgnore]`` in the source and are therefore not serialized.
+    The serialized ``challengeConfigs`` items expose ``challengeId`` and
+    ``permissions`` (matching ``DivisionChallengeConfigModel``).
+    """
+
+    id: int
+    name: str = Field(min_length=1, max_length=31)
+    inviteCode: Optional[str] = None
+    defaultPermissions: GamePermission
+    challengeConfigs: list[DivisionChallengeConfigModel] = []
 
 
 class FlagCreateModel(BaseModel):
