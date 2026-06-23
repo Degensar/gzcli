@@ -38,7 +38,6 @@ gz team register --name [team name] --bio [optional team bio]
 you must be logged in first (see `gz login`), and each user account can only own one team.
 
 ## TODO List
-- Implement challenge state tracking for synchorizing remote server status, current implementation will create challenges with duplicate names if called repeatedly
 - Complete all API endpoints and data models
 - Add account creation command
 - Improve help texts and documentations
