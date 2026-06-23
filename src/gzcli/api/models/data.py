@@ -41,6 +41,47 @@ class Blood(BaseModel):
     submitTimeUtc: Optional[int] = None
 
 
+class BloodBonus:
+    """First/second/third blood bonus packed into a single integer.
+
+    Mirrors the ``BloodBonus`` struct in GZCTF.Utils (``src/GZCTF/Utils/Shared.cs``):
+    three 10-bit fields holding the bonus in per-mille (percentage * 10), packed as
+    ``(first << 20) | (second << 10) | third``. The default is 5% / 3% / 1%.
+    """
+
+    MASK = 0x3FF  # 10 bits per field
+    MAX_PERMILLE = 1000  # logical max per field (100%)
+    DEFAULT = (50 << 20) | (30 << 10) | 10  # 5% / 3% / 1% -> 52459530
+
+    @classmethod
+    def from_factors(
+        cls, first: float = 5.0, second: float = 3.0, third: float = 1.0
+    ) -> int:
+        """Pack three blood-bonus percentages into the integer the API expects."""
+        packed = 0
+        for shift, percentage in ((20, first), (10, second), (0, third)):
+            if not 0 <= percentage <= 100:
+                raise ValueError(
+                    f"blood bonus {percentage}% out of range (0% to 100%)"
+                )
+            permille = int(round(percentage * 10))
+            if not 0 <= permille <= cls.MAX_PERMILLE:
+                raise ValueError(
+                    f"blood bonus {percentage}% out of range (0% to 100%)"
+                )
+            packed |= permille << shift
+        return packed
+
+    @classmethod
+    def to_factors(cls, value: int) -> tuple[float, float, float]:
+        """Unpack a blood-bonus integer back into (first, second, third) percentages."""
+        return (
+            ((value >> 20) & cls.MASK) / 10,
+            ((value >> 10) & cls.MASK) / 10,
+            (value & cls.MASK) / 10,
+        )
+
+
 class ChallengeItem(BaseModel):
     id: int
     score: int

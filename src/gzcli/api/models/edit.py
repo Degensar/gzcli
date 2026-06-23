@@ -5,10 +5,10 @@ Mirrors src/GZCTF/Models/Request/Edit in the GZ::CTF source.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
-from .data import Attachment
+from .data import Attachment, BloodBonus
 from .enum import (
     ChallengeCategory,
     ChallengeNetworkMode,
@@ -125,7 +125,7 @@ class FlagInfoModel(BaseModel):
 
 class GameInfoModel(BaseModel):
     acceptWithoutReview: bool
-    bloodBonus: int  # TODO: add computing bloodBonus from 3-tuple
+    bloodBonus: int = BloodBonus.DEFAULT  # packed first/second/third blood bonus
     containerCountLimit: int
     content: str
     end: int
@@ -142,6 +142,18 @@ class GameInfoModel(BaseModel):
     writeupDeadline: int
     writeupNote: str
     writeupRequired: bool
+
+    @field_validator("bloodBonus", mode="before")
+    @classmethod
+    def _pack_blood_bonus(cls, value):
+        """Allow bloodBonus to be supplied as a (first, second, third) percentage tuple."""
+        if isinstance(value, (tuple, list)):
+            if len(value) != 3:
+                raise ValueError(
+                    "bloodBonus tuple must have exactly 3 values (first, second, third)"
+                )
+            return BloodBonus.from_factors(*value)
+        return value
 
 
 class GameNoticeModel(BaseModel):
