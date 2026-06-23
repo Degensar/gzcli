@@ -110,47 +110,55 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
     if "Container" in spec.deployment.deploymentType:
         update_info_body.model_copy(update=spec.deployment.containers.flat())
 
-    resp = update_challenge_info(profile, game_id, challenge_id, update_info_body)
+    # run the remote push steps under a progress bar
+    is_static = "Static" in spec.deployment.deploymentType
+    total_steps = 2 + int(is_static) + int(not spec.hidden)  # info, upload, [flags], [enable]
+    with click.progressbar(length=total_steps, label="pushing challenge") as bar:
+        update_challenge_info(profile, game_id, challenge_id, update_info_body)
+        bar.update(1)
 
-    upload_files(profile, (challenge_path / i.path for i in spec.deployment.attachment))
+        upload_files(
+            profile, (challenge_path / i.path for i in spec.deployment.attachment)
+        )
+        bar.update(1)
 
-    if "Static" in spec.deployment.deploymentType:
-        # if the challenge attachment is static, only one attachment and one flag is allowed
-        challenge_attachment = spec.deployment.attachment[0]
-        update_attachment_body = AttachmentCreateModel(
-            attachmentType=challenge_attachment.type
-        )
-        if challenge_attachment.type == "Local":
-            file_hash = hashlib.sha256(
-                (challenge_path / challenge_attachment.path).read_bytes()
-            ).hexdigest()
-            update_attachment_body.fileHash = file_hash
-        elif challenge_attachment.type == "Remote":
-            update_attachment_body.remoteUrl = challenge_attachment.path
-        update_challenge_attachments(
-            profile, game_id, challenge_id, update_attachment_body
-        )
-        # only add flags that are not already present so re-pushing does not
-        # duplicate them
-        current_flags = (
-            {f.flag for f in get_challenge(profile, game_id, challenge_id).flags}
-            if existing is not None
-            else set()
-        )
-        update_flag_body = [
-            FlagCreateModel(flag=flag, **update_attachment_body.model_dump())
-            for flag in spec.flag
-            if flag not in current_flags
-        ]
-        if update_flag_body:
-            add_challenge_flags(profile, game_id, challenge_id, update_flag_body)
-    else:
-        pass
+        if is_static:
+            # if the challenge attachment is static, only one attachment and one flag is allowed
+            challenge_attachment = spec.deployment.attachment[0]
+            update_attachment_body = AttachmentCreateModel(
+                attachmentType=challenge_attachment.type
+            )
+            if challenge_attachment.type == "Local":
+                file_hash = hashlib.sha256(
+                    (challenge_path / challenge_attachment.path).read_bytes()
+                ).hexdigest()
+                update_attachment_body.fileHash = file_hash
+            elif challenge_attachment.type == "Remote":
+                update_attachment_body.remoteUrl = challenge_attachment.path
+            update_challenge_attachments(
+                profile, game_id, challenge_id, update_attachment_body
+            )
+            # only add flags that are not already present so re-pushing does not
+            # duplicate them
+            current_flags = (
+                {f.flag for f in get_challenge(profile, game_id, challenge_id).flags}
+                if existing is not None
+                else set()
+            )
+            update_flag_body = [
+                FlagCreateModel(flag=flag, **update_attachment_body.model_dump())
+                for flag in spec.flag
+                if flag not in current_flags
+            ]
+            if update_flag_body:
+                add_challenge_flags(profile, game_id, challenge_id, update_flag_body)
+            bar.update(1)
 
-    if not spec.hidden:
-        update_challenge_info(
-            profile, game_id, challenge_id, ChallengeUpdateModel(isEnabled=True)
-        )
+        if not spec.hidden:
+            update_challenge_info(
+                profile, game_id, challenge_id, ChallengeUpdateModel(isEnabled=True)
+            )
+            bar.update(1)
 
     challenge_endpoint = profile.make_endpoint(
         f"/admin/games/{game_id}/challenges/{challenge_id}"
