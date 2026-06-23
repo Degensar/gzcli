@@ -6,9 +6,12 @@ import yaml
 from pathlib import Path
 from gzcli.cli.auth import require_existing_profile, APIProfile
 from gzcli.cli.models import ChallengeSpec
+from gzcli.cli.output import success, info
 from gzcli.api.assets import upload_files
 from gzcli.api.edit import (
     add_challenge,
+    get_challenge,
+    get_challenges,
     update_challenge_info,
     update_challenge_attachments,
     add_challenge_flags,
@@ -77,11 +80,24 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
     if "Dynamic" in spec.deployment.deploymentType:
         raise click.ClickException("dynamic challenge is not supported yet.")
 
-    add_challenge_body = ChallengeInfoModel(
-        title=spec.title, type=spec.deployment.deploymentType, category=spec.category
+    # look up an existing challenge with the same title so repeated pushes update
+    # it in place instead of creating duplicates
+    existing = next(
+        (c for c in get_challenges(profile, game_id) if c.title == spec.title), None
     )
-    resp = add_challenge(profile, game_id, add_challenge_body)
-    challenge_id = resp.id
+    if existing is not None:
+        challenge_id = existing.id
+        click.echo(
+            f"[*] updating existing challenge '{spec.title}' (id: {challenge_id})"
+        )
+    else:
+        add_challenge_body = ChallengeInfoModel(
+            title=spec.title,
+            type=spec.deployment.deploymentType,
+            category=spec.category,
+        )
+        challenge_id = add_challenge(profile, game_id, add_challenge_body).id
+        click.echo(f"[*] creating new challenge '{spec.title}' (id: {challenge_id})")
 
     # do not set isEnabled to true in this step as there is no flag yet
     update_info_body = ChallengeUpdateModel(
@@ -90,7 +106,7 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
         difficulty=spec.scoring.difficulty,
         originalScore=spec.scoring.base_points,
         minScoreRate=spec.scoring.min_score_ratio,
-        disableBloodBonus=spec.scoring.bloodBonus,
+        disableBloodBonus=not spec.scoring.bloodBonus,
         submissionLimit=spec.maxAttempts,
     )
     if "Container" in spec.deployment.deploymentType:
@@ -116,11 +132,20 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
         update_challenge_attachments(
             profile, game_id, challenge_id, update_attachment_body
         )
+        # only add flags that are not already present so re-pushing does not
+        # duplicate them
+        current_flags = (
+            {f.flag for f in get_challenge(profile, game_id, challenge_id).flags}
+            if existing is not None
+            else set()
+        )
         update_flag_body = [
             FlagCreateModel(flag=flag, **update_attachment_body.model_dump())
             for flag in spec.flag
+            if flag not in current_flags
         ]
-        add_challenge_flags(profile, game_id, challenge_id, update_flag_body)
+        if update_flag_body:
+            add_challenge_flags(profile, game_id, challenge_id, update_flag_body)
     else:
         pass
 
@@ -132,8 +157,8 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
     challenge_endpoint = profile.make_endpoint(
         f"/admin/games/{game_id}/challenges/{challenge_id}"
     )
-    click.echo("[+] challenge pushed successfully")
-    click.echo(f"[+] access the challenge at {challenge_endpoint}")
+    success("challenge pushed successfully")
+    info(f"access the challenge at {challenge_endpoint}")
 
 
 # @game.command("upload-assets")
