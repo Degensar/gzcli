@@ -43,6 +43,19 @@ gz account register --url [remote url] --username [username] --email [email]
 ```
 you will be prompted for a password. if the server activates accounts on registration you are logged in immediately and the credentials are stored under `--profile`; otherwise confirm your email or await admin approval, then run `gz login`.
 
+## Shell completion
+
+`gz` ships with tab completion for bash, zsh and fish. Print the script for your shell and source it from your shell config:
+```sh
+gz completion bash >> ~/.bashrc       # bash
+gz completion zsh  >> ~/.zshrc         # zsh
+gz completion fish >  ~/.config/fish/completions/gz.fish
+```
+then restart your shell. To enable completion for the current session only:
+```sh
+eval "$(_GZ_COMPLETE=bash_source gz)"
+```
+
 ## TODO List
 - Complete all API endpoints and data models
 - Add account creation command
