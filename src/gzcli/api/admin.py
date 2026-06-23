@@ -1,3 +1,4 @@
+from pathlib import Path
 from gzcli.api._http import APIProfile, make_get, make_post, make_put, make_delete
 from gzcli.api.models.account import ProfileUserInfoModel
 from gzcli.api.models.admin import (
@@ -232,3 +233,38 @@ def get_files(
         params={"count": count, "skip": skip},
     )
     return ArrayResponse[LocalFile].model_validate(resp.json())
+
+
+def update_logo(profile: APIProfile, file: Path):
+    """
+    API wrapper for `/api/admin/config/logo`
+    docs: https://gzctf.gzti.me/scalar.html#tag/admin/POST/api/admin/config/logo
+
+    The server returns an empty 200 body, so the raw response is returned.
+    """
+    with file.open("rb") as fh:
+        return make_post(
+            profile,
+            "/api/admin/config/logo",
+            files=[("file", fh)],
+        )
+
+
+def reset_logo(profile: APIProfile):
+    """
+    API wrapper for `/api/admin/config/logo`
+    docs: https://gzctf.gzti.me/scalar.html#tag/admin/DELETE/api/admin/config/logo
+
+    The server returns an empty 200 body, so the raw response is returned.
+    """
+    return make_delete(profile, "/api/admin/config/logo")
+
+
+def download_all_writeups(profile: APIProfile, id: int):
+    """
+    API wrapper for `/api/admin/writeups/{id}/all`
+    docs: https://gzctf.gzti.me/scalar.html#tag/admin/GET/api/admin/writeups/{id}/all
+
+    Returns a tar download, so the raw response is returned.
+    """
+    return make_get(profile, f"/api/admin/writeups/{id}/all")

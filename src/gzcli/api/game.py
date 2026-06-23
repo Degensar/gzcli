@@ -8,6 +8,7 @@ from gzcli.api.models.game import (
     BasicGameInfoModel,
     BasicWriteupInfoModel,
     ChallengeDetailModel,
+    ChallengeTrafficModel,
     CheatInfoModel,
     ContainerInfoModel,
     DetailedGameInfoModel,
@@ -16,9 +17,11 @@ from gzcli.api.models.game import (
     GameJoinModel,
     GameNotice,
     GameDetailModel,
+    FileRecord,
     FlagSubmitModel,
     ScoreboardModel,
     Submission,
+    TeamTrafficModel,
 )
 from gzcli.api.models.admin import ParticipationInfoModel
 
@@ -225,11 +228,12 @@ def submit_writeup(profile: APIProfile, game_id: int, file: Path):
     API wrapper for `/api/game/{id}/writeup`
     docs: https://gzctf.gzti.me/scalar.html#tag/game/POST/api/game/{id}/writeup
     """
-    return make_post(
-        profile,
-        f"/api/game/{game_id}/writeup",
-        files=[("file", file.open("rb"))],
-    )
+    with file.open("rb") as fh:
+        return make_post(
+            profile,
+            f"/api/game/{game_id}/writeup",
+            files=[("file", fh)],
+        )
 
 
 def create_container(
@@ -276,3 +280,80 @@ def get_submission_sheet(profile: APIProfile, game_id: int):
     docs: https://gzctf.gzti.me/scalar.html#tag/game/GET/api/game/{id}/submissionsheet
     """
     return make_get(profile, f"/api/game/{game_id}/submissionsheet")
+
+
+def get_traffic_challenges(
+    profile: APIProfile, game_id: int
+) -> list[ChallengeTrafficModel]:
+    """
+    API wrapper for `/api/game/games/{id}/captures`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/GET/api/game/games/{id}/captures
+    """
+    resp = make_get(profile, f"/api/game/games/{game_id}/captures")
+    return [ChallengeTrafficModel.model_validate(item) for item in resp.json()]
+
+
+def get_challenge_traffic(
+    profile: APIProfile, challenge_id: int
+) -> list[TeamTrafficModel]:
+    """
+    API wrapper for `/api/game/captures/{challengeId}`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/GET/api/game/captures/{challengeId}
+    """
+    resp = make_get(profile, f"/api/game/captures/{challenge_id}")
+    return [TeamTrafficModel.model_validate(item) for item in resp.json()]
+
+
+def get_team_traffic(
+    profile: APIProfile, challenge_id: int, part_id: int
+) -> list[FileRecord]:
+    """
+    API wrapper for `/api/game/captures/{challengeId}/{partId}`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/GET/api/game/captures/{challengeId}/{partId}
+    """
+    resp = make_get(profile, f"/api/game/captures/{challenge_id}/{part_id}")
+    return [FileRecord.model_validate(item) for item in resp.json()]
+
+
+def get_all_team_traffic(profile: APIProfile, challenge_id: int, part_id: int):
+    """
+    API wrapper for `/api/game/captures/{challengeId}/{partId}/all`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/GET/api/game/captures/{challengeId}/{partId}/all
+
+    Returns a tar archive download, so the raw response is returned.
+    """
+    return make_get(profile, f"/api/game/captures/{challenge_id}/{part_id}/all")
+
+
+def delete_all_team_traffic(profile: APIProfile, challenge_id: int, part_id: int):
+    """
+    API wrapper for `/api/game/captures/{challengeId}/{partId}/all`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/DELETE/api/game/captures/{challengeId}/{partId}/all
+    """
+    return make_delete(profile, f"/api/game/captures/{challenge_id}/{part_id}/all")
+
+
+def get_team_traffic_file(
+    profile: APIProfile, challenge_id: int, part_id: int, filename: str
+):
+    """
+    API wrapper for `/api/game/captures/{challengeId}/{partId}/{filename}`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/GET/api/game/captures/{challengeId}/{partId}/{filename}
+
+    Returns a file download, so the raw response is returned.
+    """
+    return make_get(
+        profile, f"/api/game/captures/{challenge_id}/{part_id}/{filename}"
+    )
+
+
+def delete_team_traffic_file(
+    profile: APIProfile, challenge_id: int, part_id: int, filename: str
+):
+    """
+    API wrapper for `/api/game/captures/{challengeId}/{partId}/{filename}`
+    docs: https://gzctf.gzti.me/scalar.html#tag/game/DELETE/api/game/captures/{challengeId}/{partId}/{filename}
+    """
+    return make_delete(
+        profile, f"/api/game/captures/{challenge_id}/{part_id}/{filename}"
+    )
