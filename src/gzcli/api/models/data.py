@@ -10,10 +10,12 @@ This behaviour does not necessarily mirror the GZ::CTF source.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Generic, Optional, TypeVar
 from pydantic import BaseModel, Field
 
 from .enum import FileType, GamePermission, SubmissionType
+
+T = TypeVar("T")
 
 
 class ApiToken(BaseModel):
@@ -25,6 +27,19 @@ class ApiToken(BaseModel):
     isRevoked: bool
     lastUsedAt: Optional[int] = None
     name: str = Field(min_length=1, max_length=128)
+
+
+class ArrayResponse(BaseModel, Generic[T]):
+    """Generic ``{data, length, total}`` envelope returned by many list endpoints.
+
+    Mirrors the ``ArrayResponse<T>`` class in the GZ::CTF source. Use as
+    ``ArrayResponse[SomeModel]`` to validate the contained items. ``length`` is a
+    read-only, server-computed mirror of ``len(data)``.
+    """
+
+    data: list[T] = []
+    length: int = 0
+    total: int = 0
 
 
 class Attachment(BaseModel):
@@ -109,8 +124,24 @@ class DivisionItem(BaseModel):
 
 
 class JoinedTeam(BaseModel):
-    division: int
+    division: Optional[int] = None
     id: int
+
+
+class LocalFile(BaseModel):
+    """File entity returned by ``GET /api/admin/files`` and the assets upload.
+
+    Mirrors ``LocalFile`` in ``src/GZCTF/Models/Data/LocalFile.cs``. Only ``hash``
+    and ``name`` are serialized by GZCTF; the other fields on that model carry
+    ``[JsonIgnore]`` and never appear in the JSON response.
+    """
+
+    hash: str = Field(default="", max_length=64)
+    name: str = ""
+
+    def url(self, filename: Optional[str] = None) -> str:
+        """Construct the asset fetch URL, mirroring the C# ``Url()`` method."""
+        return f"/assets/{self.hash}/{filename or self.name}"
 
 
 class RequestResponse(BaseModel):

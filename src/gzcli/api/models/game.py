@@ -22,6 +22,7 @@ from .enum import (
     ChallengeType,
     ContainerStatus,
     EventType,
+    NoticeType,
     ParticipationStatus,
     TimeStamp,
 )
@@ -154,6 +155,20 @@ class GameJoinModel(BaseModel):
     divisionId: Optional[int] = None
     inviteCode: Optional[str] = None
     teamId: int
+
+
+class GameNotice(BaseModel):
+    """Game notice returned by the edit and game notice endpoints.
+
+    Mirrors ``GameNotice`` in ``src/GZCTF/Models/Data/GameNotice.cs`` (which extends
+    ``FormattableData<NoticeType>``). ``gameId`` and ``game`` are ``[JsonIgnore]`` in
+    the source and are therefore not serialized.
+    """
+
+    id: int
+    type: NoticeType
+    values: Optional[list[str]] = None
+    time: Optional[int] = None
 
 
 class ParticipationModel(BaseModel):
