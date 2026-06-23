@@ -148,6 +148,10 @@ class GameInfoModel(BaseModel):
     def _pack_blood_bonus(cls, value):
         """Allow bloodBonus to be supplied as a (first, second, third) percentage tuple."""
         if isinstance(value, (tuple, list)):
+            if len(value) != 3:
+                raise ValueError(
+                    "bloodBonus tuple must have exactly 3 values (first, second, third)"
+                )
             return BloodBonus.from_factors(*value)
         return value
 
