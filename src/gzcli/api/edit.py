@@ -207,11 +207,12 @@ def update_game_poster(profile: APIProfile, game_id: int, file: Path) -> str:
     API wrapper for `/api/edit/games/{id}/poster`
     docs: https://gzctf.gzti.me/scalar.html#tag/edit/PUT/api/edit/games/{id}/poster
     """
-    resp = make_put(
-        profile,
-        f"/api/edit/games/{game_id}/poster",
-        files=[("file", file.open("rb"))],
-    )
+    with file.open("rb") as fh:
+        resp = make_put(
+            profile,
+            f"/api/edit/games/{game_id}/poster",
+            files=[("file", fh)],
+        )
     return resp.json()
 
 
@@ -365,3 +366,49 @@ def delete_flag(
         profile,
         f"/api/edit/games/{game_id}/challenges/{challenge_id}/flags/{flag_id}",
     )
+
+
+def get_hash_salt(profile: APIProfile, game_id: int) -> str:
+    """
+    API wrapper for `/api/edit/games/{id}/hashsalt`
+
+    Note: This endpoint is decorated with [OpenApiIgnore] in the GZCTF controller and
+    is intentionally excluded from the public OpenAPI spec. No docs URL is available.
+    """
+    resp = make_get(profile, f"/api/edit/games/{game_id}/hashsalt")
+    return resp.json()
+
+
+def delete_game_writeups(profile: APIProfile, game_id: int):
+    """
+    API wrapper for `/api/edit/games/{id}/writeups`
+    docs: https://gzctf.gzti.me/scalar.html#tag/edit/DELETE/api/edit/games/{id}/writeups
+
+    The server returns an empty 200 body (its ProducesResponseType is inaccurate),
+    so the raw response is returned.
+    """
+    return make_delete(profile, f"/api/edit/games/{game_id}/writeups")
+
+
+def export_game(profile: APIProfile, game_id: int):
+    """
+    API wrapper for `/api/edit/games/{id}/export`
+    docs: https://gzctf.gzti.me/scalar.html#tag/edit/POST/api/edit/games/{id}/export
+
+    Returns a zip download, so the raw response is returned.
+    """
+    return make_post(profile, f"/api/edit/games/{game_id}/export")
+
+
+def import_game(profile: APIProfile, file: Path) -> int:
+    """
+    API wrapper for `/api/edit/games/import`
+    docs: https://gzctf.gzti.me/scalar.html#tag/edit/POST/api/edit/games/import
+    """
+    with file.open("rb") as fh:
+        resp = make_post(
+            profile,
+            "/api/edit/games/import",
+            files=[("file", fh)],
+        )
+    return resp.json()

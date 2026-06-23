@@ -147,9 +147,10 @@ def update_avatar(profile: APIProfile, file: Path) -> str:
     API wrapper for `/api/account/avatar`
     docs: https://gzctf.gzti.me/scalar.html#tag/account/PUT/api/account/avatar
     """
-    resp = make_put(
-        profile,
-        "/api/account/avatar",
-        files=[("file", file.open("rb"))],
-    )
+    with file.open("rb") as fh:
+        resp = make_put(
+            profile,
+            "/api/account/avatar",
+            files=[("file", fh)],
+        )
     return resp.json()
