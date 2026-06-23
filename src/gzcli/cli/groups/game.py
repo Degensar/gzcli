@@ -90,7 +90,7 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
         difficulty=spec.scoring.difficulty,
         originalScore=spec.scoring.base_points,
         minScoreRate=spec.scoring.min_score_ratio,
-        disableBloodBonus=spec.scoring.bloodBonus,
+        disableBloodBonus=not spec.scoring.bloodBonus,
         submissionLimit=spec.maxAttempts,
     )
     if "Container" in spec.deployment.deploymentType:
