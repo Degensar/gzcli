@@ -57,5 +57,4 @@ eval "$(_GZ_COMPLETE=bash_source gz)"
 ```
 
 ## TODO List
-- Complete all API endpoints and data models
 - Fancy stuff (progress bars...)
