@@ -1,5 +1,5 @@
 from gzcli.api._http import APIProfile, make_post
-from gzcli.api.models.requests.team import TeamUpdateModel, TeamInfoModel
+from gzcli.api.models.info import TeamUpdateModel, TeamInfoModel
 
 
 def create_team(profile: APIProfile, body: TeamUpdateModel) -> TeamInfoModel:
