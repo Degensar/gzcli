@@ -60,7 +60,11 @@ class BloodBonus:
         """Pack three blood-bonus percentages into the integer the API expects."""
         packed = 0
         for shift, percentage in ((20, first), (10, second), (0, third)):
-            permille = round(percentage * 10)
+            if not 0 <= percentage <= 100:
+                raise ValueError(
+                    f"blood bonus {percentage}% out of range (0% to 100%)"
+                )
+            permille = int(round(percentage * 10))
             if not 0 <= permille <= cls.MAX_PERMILLE:
                 raise ValueError(
                     f"blood bonus {percentage}% out of range (0% to 100%)"
