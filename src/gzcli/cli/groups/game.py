@@ -87,9 +87,7 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
     )
     if existing is not None:
         challenge_id = existing.id
-        click.echo(
-            f"[*] updating existing challenge '{spec.title}' (id: {challenge_id})"
-        )
+        info(f"updating existing challenge '{spec.title}' (id: {challenge_id})")
     else:
         add_challenge_body = ChallengeInfoModel(
             title=spec.title,
@@ -97,7 +95,7 @@ def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
             category=spec.category,
         )
         challenge_id = add_challenge(profile, game_id, add_challenge_body).id
-        click.echo(f"[*] creating new challenge '{spec.title}' (id: {challenge_id})")
+        info(f"creating new challenge '{spec.title}' (id: {challenge_id})")
 
     # do not set isEnabled to true in this step as there is no flag yet
     update_info_body = ChallengeUpdateModel(
