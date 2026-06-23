@@ -64,7 +64,7 @@ class ChallengeSpec(BaseModel):
     scoring: ChallengeScoring
     category: ChallengeCategory
     author: Optional[str] = None
-    description: Optional[str] = Field(max_length=8192)
+    description: Optional[str] = Field(default=None, max_length=8192)
     prerequisites: Optional[list] = None
     hidden: Optional[bool] = False
     maxAttempts: Optional[int] = None
