@@ -1,5 +1,6 @@
 import click
 import requests
+from click.shell_completion import get_completion_class
 from gzcli.cli.errors import error_wrap
 from gzcli.cli.auth import (
     _save_edited_profiles,
@@ -74,3 +75,21 @@ def list_challenge_types():
     click.echo(
         "for more information visit https://gzctf.gzti.me/guide/start/introduction"
     )
+
+
+@gz.command()
+@click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
+def completion(shell: str):
+    """\b
+    print the shell completion script for the given shell.
+    enable it by sourcing the output, for example:
+        gz completion bash >> ~/.bashrc      # bash
+        gz completion zsh  >> ~/.zshrc        # zsh
+        gz completion fish >  ~/.config/fish/completions/gz.fish
+    then restart your shell.
+    """
+    completion_cls = get_completion_class(shell)
+    if completion_cls is None:
+        raise click.ClickException(f"shell completion is not supported for {shell}")
+    # `gz` is fully wired with its subcommands by the entrypoint before this runs
+    click.echo(completion_cls(gz, {}, "gz", "_GZ_COMPLETE").source())

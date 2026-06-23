@@ -37,6 +37,19 @@ gz team register --name [team name] --bio [optional team bio]
 ```
 you must be logged in first (see `gz login`), and each user account can only own one team.
 
+## Shell completion
+
+`gz` ships with tab completion for bash, zsh and fish. Print the script for your shell and source it from your shell config:
+```sh
+gz completion bash >> ~/.bashrc       # bash
+gz completion zsh  >> ~/.zshrc         # zsh
+gz completion fish >  ~/.config/fish/completions/gz.fish
+```
+then restart your shell. To enable completion for the current session only:
+```sh
+eval "$(_GZ_COMPLETE=bash_source gz)"
+```
+
 ## TODO List
 - Implement challenge state tracking for synchorizing remote server status, current implementation will create challenges with duplicate names if called repeatedly
 - Complete all API endpoints and data models
