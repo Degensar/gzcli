@@ -57,4 +57,4 @@ eval "$(_GZ_COMPLETE=bash_source gz)"
 ```
 
 ## TODO List
-- Fancy stuff (progress bars...)
+- (nothing outstanding — see merged PRs for completed work)
