@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from gzcli.cli.auth import require_existing_profile, APIProfile
 from gzcli.cli.errors import error_wrap
 from gzcli.api.team import create_team
-from gzcli.api.models.requests.team import TeamUpdateModel
+from gzcli.api.models.info import TeamUpdateModel
 
 
 def _format_http_error(exc: requests.HTTPError) -> str:
