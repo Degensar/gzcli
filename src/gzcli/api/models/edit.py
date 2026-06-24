@@ -88,7 +88,8 @@ class ChallengeUpdateModel(BaseModel):
     submissionLimit: Optional[int] = Field(default=None, ge=0, le=10000)
     testContainer: Optional[ContainerInfoModel] = None
     title: Optional[str] = Field(default=None, min_length=1)
-    type: Optional[ChallengeType] = None
+    # NOTE: no `type` field — challenge type is immutable after creation and is
+    # absent from the C# ChallengeUpdateModel, so it cannot be changed here.
 
 
 class DivisionChallengeConfigModel(BaseModel):
