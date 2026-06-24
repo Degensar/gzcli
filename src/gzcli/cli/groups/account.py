@@ -1,28 +1,13 @@
 """Commands for managing user accounts on the remote ctf server"""
 
 import click
-import requests
 from pydantic import ValidationError
 from gzcli.cli.auth import _load_profiles, _save_edited_profiles
 from gzcli.cli.config import PROFILES_PATH
-from gzcli.cli.errors import error_wrap
+from gzcli.cli.errors import error_wrap, format_validation_error
 from gzcli.api._http import APIProfile
 from gzcli.api.account import register as register_account
 from gzcli.api.models.account import RegisterModel
-
-
-def _format_http_error(exc: requests.HTTPError) -> str:
-    """turn an HTTP error from the server into a readable message"""
-    resp = exc.response
-    if resp is None:
-        return str(exc)
-    try:
-        body = resp.json()
-    except ValueError:
-        body = None
-    if isinstance(body, dict) and body.get("title"):
-        return f"{resp.status_code} {body['title']}"
-    return f"{resp.status_code} {resp.reason}"
 
 
 @click.group()
@@ -81,17 +66,14 @@ def register(
             userName=username, email=email, password=password, challenge=challenge
         )
     except ValidationError as exc:
-        messages = "; ".join(err["msg"] for err in exc.errors())
-        raise click.ClickException(f"invalid account information: {messages}")
+        raise click.ClickException(
+            f"invalid account information: {format_validation_error(exc)}"
+        )
 
     url = url.strip("/")
     api_profile = APIProfile(name=profile, url=url, token="", username=username)
 
-    try:
-        resp = register_account(api_profile, body)
-    except requests.HTTPError as exc:
-        raise click.ClickException(_format_http_error(exc))
-
+    resp = register_account(api_profile, body)
     payload = resp.json() if resp.content else {}
     status = payload.get("data")
 
