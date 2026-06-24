@@ -5,6 +5,7 @@ import click
 import yaml
 from pathlib import Path
 from gzcli.cli.auth import require_existing_profile, APIProfile
+from gzcli.cli.errors import error_wrap
 from gzcli.cli.models import ChallengeSpec
 from gzcli.cli.output import success, info
 from gzcli.api.assets import upload_files
@@ -62,6 +63,7 @@ def get(game_id: int, profile: APIProfile):
 )
 @require_game_id
 @require_existing_profile
+@error_wrap
 def push_challenge(game_id: int, challenge_path: Path, profile: APIProfile):
     """\b
     push a challenge to the remote CTF server.
